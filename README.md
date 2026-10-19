@@ -58,20 +58,25 @@ Two configuration files are provided in the repository:
 2. `.env`: Pre-populated with the functional Data.gov.in Agmarknet credentials.
 
 ```env
-# Official Data.gov.in Mandi API (Agmarknet)
-VITE_DATA_GOV_API_KEY=your_data_gov_in_api_key_here
-VITE_MANDI_RESOURCE_ID=9ef84268-d588-465a-a308-a864a43d0070
+# Official Data.gov.in Mandi API (Agmarknet) — Server-side only
+DATA_GOV_API_KEY=your_data_gov_in_api_key_here
+MANDI_RESOURCE_ID=9ef84268-d588-465a-a308-a864a43d0070
 
 # Supabase (Optional: connects to live cloud database when provided; defaults to local persistent reactive storage)
 VITE_SUPABASE_URL=https://your-project.supabase.co
 VITE_SUPABASE_ANON_KEY=your-anon-jwt-key
 ```
 
-### Mandi API Setup
-If you wish to use your own personal API key:
-1. Register on [data.gov.in](https://data.gov.in).
-2. Generate an API Key in "My Account" ➔ "API Keys".
-3. Replace `VITE_DATA_GOV_API_KEY` in `.env`.
+### Server-Side Mandi API Route (`/api/mandi`)
+To ensure complete security, upstream Data.gov.in API keys are **never** exposed to the browser client:
+1. **Server-Side Route:** All requests are handled via the `/api/mandi` endpoint:
+   - **Local Development:** Handled by a dedicated local Express server ([`server.js`](file:///d:/farmdirect/server.js)) or Vite dev middleware.
+   - **Production Deployment:** Handled by a Vercel serverless function at [`api/mandi.ts`](file:///d:/farmdirect/api/mandi.ts).
+2. **Client Isolation:** The frontend client exclusively queries `/api/mandi`, keeping all secret keys safely on the server side.
+3. If you wish to use your own personal API key:
+   - Register on [data.gov.in](https://data.gov.in).
+   - Generate an API Key in "My Account" ➔ "API Keys".
+   - Set `DATA_GOV_API_KEY` in your `.env` file or deployment environment variables.
 
 ### Supabase PostgreSQL Setup
 1. Create a project at [supabase.com](https://supabase.com).

@@ -32,23 +32,6 @@ export interface MandiFetchResult {
   errorMessage?: string;
 }
 
-const getEnvVar = (key: string, fallback: string = ''): string => {
-  try {
-    if (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env[key]) {
-      return import.meta.env[key];
-    }
-  } catch {}
-  try {
-    if (typeof process !== 'undefined' && process.env && process.env[key]) {
-      return process.env[key] || fallback;
-    }
-  } catch {}
-  return fallback;
-};
-
-const API_KEY = getEnvVar('VITE_DATA_GOV_API_KEY', '');
-const RESOURCE_ID = getEnvVar('VITE_MANDI_RESOURCE_ID', '9ef84268-d588-465a-a308-a864a43d0070');
-
 export async function fetchKarnatakaMandiPrices(
   forceDemo: boolean = false
 ): Promise<MandiFetchResult> {
@@ -58,8 +41,8 @@ export async function fetchKarnatakaMandiPrices(
     second: '2-digit',
   });
 
-  // Explicit DEMO mode or missing API key
-  if (forceDemo || !API_KEY || API_KEY.includes('your_data_gov_in_api_key')) {
+  // Explicit DEMO mode
+  if (forceDemo) {
     return {
       data: COASTAL_MANDI_BENCHMARKS,
       status: 'DEMO',
@@ -70,47 +53,42 @@ export async function fetchKarnatakaMandiPrices(
   }
 
   try {
-    const baseUrl = `https://api.data.gov.in/resource/${RESOURCE_ID}?api-key=${API_KEY}&format=json`;
+    const endpoint = typeof window !== 'undefined'
+      ? '/api/mandi'
+      : (process.env.TEST_API_URL || 'http://127.0.0.1:3001/api/mandi');
+
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 8000);
 
-    // Parallel query: Karnataka general APMC feed + live Banana & Coconut commodities
-    const [karnatakaRes, bananaRes, coconutRes] = await Promise.allSettled([
-      fetch(`${baseUrl}&limit=100&filters%5Bstate%5D=Karnataka`, { signal: controller.signal, headers: { Accept: 'application/json' } }),
-      fetch(`${baseUrl}&limit=20&filters%5Bcommodity%5D=Banana`, { signal: controller.signal, headers: { Accept: 'application/json' } }),
-      fetch(`${baseUrl}&limit=20&filters%5Bcommodity%5D=Coconut`, { signal: controller.signal, headers: { Accept: 'application/json' } }),
-    ]);
+    const response = await fetch(endpoint, {
+      signal: controller.signal,
+      headers: { Accept: 'application/json' },
+    });
     clearTimeout(timeoutId);
 
-    const rawRecords: DataGovRecord[] = [];
-
-    if (karnatakaRes.status === 'fulfilled' && karnatakaRes.value.ok) {
-      const data: MandiApiResponse = await karnatakaRes.value.json();
-      if (data && Array.isArray(data.records)) {
-        rawRecords.push(...data.records);
-      }
+    if (!response.ok) {
+      throw new Error(`Server API returned HTTP status ${response.status}`);
     }
 
-    if (bananaRes.status === 'fulfilled' && bananaRes.value.ok) {
-      const data: MandiApiResponse = await bananaRes.value.json();
-      if (data && Array.isArray(data.records)) {
-        rawRecords.push(...data.records);
-      }
+    const json = await response.json();
+
+    if (json.status === 'DEMO') {
+      return {
+        data: COASTAL_MANDI_BENCHMARKS,
+        status: 'DEMO',
+        lastFetchedAt: timestamp,
+        sourceDescription: 'Server returned DEMO mode (no upstream API key configured).',
+        totalRecords: COASTAL_MANDI_BENCHMARKS.length,
+      };
     }
 
-    if (coconutRes.status === 'fulfilled' && coconutRes.value.ok) {
-      const data: MandiApiResponse = await coconutRes.value.json();
-      if (data && Array.isArray(data.records)) {
-        rawRecords.push(...data.records);
-      }
-    }
-
-    if (rawRecords.length > 0) {
+    if (json.records && Array.isArray(json.records) && json.records.length > 0) {
       const todayStr = new Date().toLocaleDateString('en-GB'); // dd/mm/yyyy
-      const latestArrival = rawRecords[0]?.arrival_date || '';
-      const isToday = rawRecords.some((r) => r.arrival_date?.includes(todayStr) || r.arrival_date?.includes('2026'));
+      const isToday = json.isLiveToday ?? json.records.some(
+        (r: any) => r.arrival_date?.includes(todayStr) || r.arrival_date?.includes('2026')
+      );
 
-      const liveConverted: MandiRecord[] = rawRecords.map((r, idx) => {
+      const liveConverted: MandiRecord[] = json.records.map((r: any, idx: number) => {
         const modal = Number(r.modal_price) || 0;
         const min = Number(r.min_price) || 0;
         const max = Number(r.max_price) || 0;
@@ -145,18 +123,17 @@ export async function fetchKarnatakaMandiPrices(
         status: isToday ? 'LIVE' : 'STALE',
         lastFetchedAt: timestamp,
         sourceDescription: isToday
-          ? `Official Data.gov.in (Agmarknet) — Real-time Live Mandi Feed (${rawRecords.length} live records loaded)`
-          : `Official Data.gov.in (Agmarknet) — Latest reported bulletin dated ${latestArrival}`,
+          ? `Official Data.gov.in (Agmarknet) — Real-time Live Mandi Feed (${json.records.length} live records via /api/mandi)`
+          : `Official Data.gov.in (Agmarknet) — Latest reported bulletin dated ${json.latestArrival || ''}`,
         totalRecords: combined.length,
       };
     }
 
-    // No records returned
     return {
       data: COASTAL_MANDI_BENCHMARKS,
       status: 'STALE',
       lastFetchedAt: timestamp,
-      sourceDescription: 'Agmarknet query returned 0 records; displaying cached coastal APMC benchmarks.',
+      sourceDescription: 'Server returned 0 live records; displaying cached coastal APMC benchmarks.',
       totalRecords: COASTAL_MANDI_BENCHMARKS.length,
     };
   } catch (err: unknown) {
@@ -165,7 +142,7 @@ export async function fetchKarnatakaMandiPrices(
       data: COASTAL_MANDI_BENCHMARKS,
       status: 'UNAVAILABLE',
       lastFetchedAt: timestamp,
-      sourceDescription: 'Official Mandi API is unreachable. Gracefully serving verified local APMC benchmarks.',
+      sourceDescription: 'Server-side /api/mandi route is unreachable. Gracefully serving verified local APMC benchmarks.',
       totalRecords: COASTAL_MANDI_BENCHMARKS.length,
       errorMessage: errorMsg,
     };
