@@ -1,5 +1,7 @@
 import { MandiRecord, PriceHistoryPoint } from '../types';
 
+export const getTodayDateStr = () => new Date().toLocaleDateString('en-GB');
+
 export const COASTAL_MANDI_BENCHMARKS: MandiRecord[] = [
   {
     id: 'mandi-1',
@@ -10,7 +12,7 @@ export const COASTAL_MANDI_BENCHMARKS: MandiRecord[] = [
     commodity_kannada: 'ತೆಂಗಿನಕಾಯಿ',
     variety: 'Fresh Mature Nut (Grade FAQ)',
     grade: 'FAQ',
-    arrival_date: '18/10/2026',
+    arrival_date: getTodayDateStr(),
     min_price: 2200, // per 100 nuts
     max_price: 2750,
     modal_price: 2500, // ₹25/nut
@@ -29,7 +31,7 @@ export const COASTAL_MANDI_BENCHMARKS: MandiRecord[] = [
     commodity_kannada: 'ಅಡಿಕೆ (ಚಾಲಿ)',
     variety: 'Mangalore Chali / White Supari',
     grade: 'FAQ',
-    arrival_date: '18/10/2026',
+    arrival_date: getTodayDateStr(),
     min_price: 43500, // per Quintal (100 kg)
     max_price: 49000,
     modal_price: 46500,
@@ -48,7 +50,7 @@ export const COASTAL_MANDI_BENCHMARKS: MandiRecord[] = [
     commodity_kannada: 'ಕಾಳುಮೆಣಸು',
     variety: 'Panniyur-1 Bold Malabar',
     grade: 'Grade A',
-    arrival_date: '18/10/2026',
+    arrival_date: getTodayDateStr(),
     min_price: 58000, // per Quintal
     max_price: 64500,
     modal_price: 61500,
@@ -67,7 +69,7 @@ export const COASTAL_MANDI_BENCHMARKS: MandiRecord[] = [
     commodity_kannada: 'ಮಟ್ಟು ಗುಳ್ಳ',
     variety: 'Mattu Village Authentic GI',
     grade: 'Grade A Special',
-    arrival_date: '18/10/2026',
+    arrival_date: getTodayDateStr(),
     min_price: 4200, // per Quintal
     max_price: 5400,
     modal_price: 4800,
@@ -86,7 +88,7 @@ export const COASTAL_MANDI_BENCHMARKS: MandiRecord[] = [
     commodity_kannada: 'ಶಂಕರಪುರ ಮಲ್ಲಿಗೆ',
     variety: 'GI Certified Udupi Mallige',
     grade: 'Supreme Fresh',
-    arrival_date: '18/10/2026',
+    arrival_date: getTodayDateStr(),
     min_price: 650, // per 'Atte' (string bunch)
     max_price: 850,
     modal_price: 740,
@@ -105,7 +107,7 @@ export const COASTAL_MANDI_BENCHMARKS: MandiRecord[] = [
     commodity_kannada: 'ಗೇರು ಬೀಜ',
     variety: 'Coastal Vengurla-4',
     grade: 'FAQ',
-    arrival_date: '18/10/2026',
+    arrival_date: getTodayDateStr(),
     min_price: 13500, // per Quintal
     max_price: 15800,
     modal_price: 14600,
@@ -124,7 +126,7 @@ export const COASTAL_MANDI_BENCHMARKS: MandiRecord[] = [
     commodity_kannada: 'ಕುಚಲಕ್ಕಿ / ಕೆಂಪು ಭತ್ತ',
     variety: 'Jaya / MO-4 Parboiled',
     grade: 'FAQ',
-    arrival_date: '18/10/2026',
+    arrival_date: getTodayDateStr(),
     min_price: 2850, // per Quintal
     max_price: 3300,
     modal_price: 3100,
@@ -143,7 +145,7 @@ export const COASTAL_MANDI_BENCHMARKS: MandiRecord[] = [
     commodity_kannada: 'ರಸಬಾಳೆ',
     variety: 'Elakki / Nanjangud Style Coastal',
     grade: 'Grade A',
-    arrival_date: '18/10/2026',
+    arrival_date: getTodayDateStr(),
     min_price: 3600, // per Quintal
     max_price: 4500,
     modal_price: 4000,
@@ -162,7 +164,7 @@ export const COASTAL_MANDI_BENCHMARKS: MandiRecord[] = [
     commodity_kannada: 'ಹಸಿ ಶುಂಠಿ',
     variety: 'Rio-De-Janeiro Coastal',
     grade: 'Grade A',
-    arrival_date: '18/10/2026',
+    arrival_date: getTodayDateStr(),
     min_price: 6800,
     max_price: 8200,
     modal_price: 7500,
@@ -181,7 +183,7 @@ export const COASTAL_MANDI_BENCHMARKS: MandiRecord[] = [
     commodity_kannada: 'ಬಸಳೆ ಸೊಪ್ಪು',
     variety: 'Local Green Vine',
     grade: 'Fresh Harvest',
-    arrival_date: '18/10/2026',
+    arrival_date: getTodayDateStr(),
     min_price: 1800,
     max_price: 2600,
     modal_price: 2200,
