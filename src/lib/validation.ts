@@ -1,0 +1,75 @@
+import { z } from 'zod';
+
+export const listingFormSchema = z.object({
+  crop_name: z.string().min(2, 'Crop name must be at least 2 characters'),
+  crop_kannada_name: z.string().optional(),
+  crop_category: z.enum([
+    'GI Tagged',
+    'Cash Crops',
+    'Spices',
+    'Fruits',
+    'Vegetables',
+    'Rice & Grains',
+  ]),
+  variety: z.string().min(2, 'Variety is required (e.g. Mangalore Chali, Mattu Gulla)'),
+  grade: z.enum(['Standard (FAQ)', 'Grade A Premium', 'Export Quality', 'Certified Organic']),
+  district: z.enum(['Dakshina Kannada', 'Udupi']),
+  taluk: z.enum([
+    'Mangalore',
+    'Bantwal',
+    'Belthangady',
+    'Puttur',
+    'Sullia',
+    'Moodbidri',
+    'Kadaba',
+    'Udupi',
+    'Kundapura',
+    'Karkala',
+    'Brahmavara',
+    'Byndoor',
+    'Kaup',
+    'Hebri',
+  ]),
+  village: z.string().min(2, 'Village or locality is required'),
+  harvest_date: z.string().min(4, 'Harvest date is required'),
+  available_qty: z.coerce.number().positive('Available quantity must be greater than 0'),
+  unit: z.enum(['kg', 'quintal', 'nut', 'bunch']),
+  min_order_qty: z.coerce.number().positive('Minimum order quantity must be greater than 0'),
+  farmer_price_per_unit: z.coerce.number().positive('Price must be greater than ₹0'),
+  organic_certified: z.boolean().default(false),
+  gi_tagged: z.boolean().default(false),
+  description: z.string().min(10, 'Please write at least a 10-character description of your harvest'),
+  farmer_name: z.string().min(2, 'Farmer name is required'),
+  farmer_phone: z.string().regex(/^[6-9]\d{9}$/, 'Please enter a valid 10-digit Indian mobile number'),
+});
+
+export type ListingFormValues = z.infer<typeof listingFormSchema>;
+
+export const orderFormSchema = z.object({
+  buyer_name: z.string().min(2, 'Your name is required'),
+  buyer_phone: z.string().regex(/^[6-9]\d{9}$/, 'Please enter a valid 10-digit Indian mobile number'),
+  buyer_type: z.enum(['household', 'retailer', 'restaurant', 'hotel', 'bulk_aggregator']),
+  quantity: z.coerce.number().positive('Quantity must be greater than 0'),
+  delivery_type: z.enum(['farm_pickup', 'hub_consolidation', 'direct_delivery']),
+  delivery_address: z.string().min(5, 'Delivery address is required'),
+  delivery_taluk: z.enum([
+    'Mangalore',
+    'Bantwal',
+    'Belthangady',
+    'Puttur',
+    'Sullia',
+    'Moodbidri',
+    'Kadaba',
+    'Udupi',
+    'Kundapura',
+    'Karkala',
+    'Brahmavara',
+    'Byndoor',
+    'Kaup',
+    'Hebri',
+  ]),
+  payment_method: z.enum(['upi_direct', 'escrow_hold', 'cash_on_delivery']),
+  notes: z.string().optional(),
+});
+
+export type OrderFormValues = z.infer<typeof orderFormSchema>;
